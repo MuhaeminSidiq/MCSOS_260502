@@ -1,0 +1,57 @@
+TARGET := x86_64-elf
+CC := clang
+LD := ld.lld
+OBJDUMP ?= objdump
+READELF := readelf
+NM := nm
+
+CFLAGS := -target $(TARGET) -std=c17 -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -O2 -Wall -Wextra -Werror -Iinclude
+ASFLAGS := -target $(TARGET) -ffreestanding -fno-pic -mno-red-zone -Wall -Wextra -Werror -Iinclude
+LDFLAGS := -nostdlib -T linker.ld -z max-page-size=0x1000
+
+BUILD := build
+OBJS := $(BUILD)/boot.o $(BUILD)/interrupts.o $(BUILD)/serial.o $(BUILD)/panic.o $(BUILD)/pic.o $(BUILD)/pit.o $(BUILD)/idt.o $(BUILD)/kernel.o
+KERNEL := $(BUILD)/mcsos-m5.elf
+
+.PHONY: all clean audit breakpoint
+all: $(KERNEL) audit
+
+$(BUILD):
+	mkdir -p $(BUILD)
+
+$(BUILD)/%.o: src/%.c | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD)/%.o: src/%.S | $(BUILD)
+	$(CC) $(ASFLAGS) -c $< -o $@
+
+$(KERNEL): $(OBJS)
+	$(LD) $(LDFLAGS) $(OBJS) -Map=$(BUILD)/mcsos-m5.map -o $@
+
+breakpoint: CFLAGS += -DMCSOS_TEST_BREAKPOINT
+breakpoint: clean all
+
+audit: $(KERNEL)
+	$(READELF) -h $(KERNEL) > $(BUILD)/readelf-header.txt
+	$(READELF) -S $(KERNEL) > $(BUILD)/readelf-sections.txt
+	$(READELF) -l $(KERNEL) > $(BUILD)/readelf-program-headers.txt
+	$(NM) -n $(KERNEL) > $(BUILD)/symbols.txt
+	$(NM) -u $(KERNEL) > $(BUILD)/undefined.txt
+	$(OBJDUMP) -d $(KERNEL) > $(BUILD)/disassembly.txt
+	test ! -s $(BUILD)/undefined.txt
+	grep -q "lidt" $(BUILD)/disassembly.txt
+	grep -q "iretq" $(BUILD)/disassembly.txt
+	grep -q "out" $(BUILD)/disassembly.txt
+	grep -q "sti" $(BUILD)/disassembly.txt
+	grep -q "hlt" $(BUILD)/disassembly.txt
+
+grade: all
+	grep -q "isr_stub_32" $(BUILD)/symbols.txt
+	grep -q "pic_remap" $(BUILD)/symbols.txt
+	grep -q "pit_configure_hz" $(BUILD)/symbols.txt
+	grep -q "timer_on_irq0" $(BUILD)/symbols.txt
+	grep -q "x86_64_trap_dispatch" $(BUILD)/symbols.txt
+	@echo "M5 static grade: PASS"
+
+clean:
+	rm -rf $(BUILD)

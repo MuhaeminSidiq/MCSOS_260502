@@ -1,0 +1,36 @@
+CLANG ?= clang
+TARGET_TRIPLE ?= x86_64-elf
+CFLAGS_COMMON := -std=c17 -Wall -Wextra -Werror -O2
+SRC := kernel/fs/mcsfs1j/m16_mcsfs_journal.c
+BUILD := build/m16
+HOST_BIN := $(BUILD)/m16_host_test
+FREESTANDING_OBJ := $(BUILD)/m16_mcsfs_journal.o
+
+.PHONY: all host freestanding audit clean
+all: host freestanding audit
+
+$(BUILD):
+	mkdir -p $(BUILD)
+
+host: $(HOST_BIN)
+	./$(HOST_BIN)
+
+$(HOST_BIN): $(SRC) | $(BUILD)
+	$(CLANG) $(CFLAGS_COMMON) -DMCSOS_M16_HOST_TEST $< -o $@
+
+freestanding: $(FREESTANDING_OBJ)
+
+$(FREESTANDING_OBJ): $(SRC) | $(BUILD)
+	$(CLANG) $(CFLAGS_COMMON) -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -mno-red-zone -target $(TARGET_TRIPLE) -c $< -o $@
+
+audit: $(FREESTANDING_OBJ)
+	nm -u $(FREESTANDING_OBJ) > $(BUILD)/nm_undefined.txt
+	readelf -h $(FREESTANDING_OBJ) > $(BUILD)/readelf_header.txt
+	objdump -dr $(FREESTANDING_OBJ) > $(BUILD)/objdump_disasm.txt
+	sha256sum $(FREESTANDING_OBJ) > $(BUILD)/sha256sum.txt
+	test ! -s $(BUILD)/nm_undefined.txt
+	grep -q 'ELF64' $(BUILD)/readelf_header.txt
+	grep -q 'Advanced Micro Devices X86-64' $(BUILD)/readelf_header.txt
+
+clean:
+	rm -rf $(BUILD)
