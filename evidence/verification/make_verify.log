@@ -1,0 +1,381 @@
+make -f Makefile.m6.example CC=clang HOSTCC=clang check
+make[1]: Entering directory '/mnt/data/OS_repo/mcsos'
+mkdir -p build
+clang -std=c17 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -mno-red-zone -Iinclude -c src/pmm.c -o build/pmm.o
+mkdir -p build
+clang -std=c17 -Wall -Wextra -Werror -Iinclude src/pmm.c tests/test_pmm_host.c -o build/test_pmm_host
+./build/test_pmm_host
+M6 PMM host unit test: PASS
+nm -u build/pmm.o
+objdump -dr build/pmm.o > build/pmm.objdump.txt
+make[1]: Leaving directory '/mnt/data/OS_repo/mcsos'
+make -f Makefile.m7.example CC=clang HOSTCC=clang check
+make[1]: Entering directory '/mnt/data/OS_repo/mcsos'
+mkdir -p build
+clang -std=c17 -Wall -Wextra -Werror -ffreestanding -fno-builtin -fno-stack-protector -mno-red-zone -Iinclude -c src/vmm.c -o build/vmm.o
+mkdir -p build
+clang -std=c17 -Wall -Wextra -Werror -DMCSOS_HOST_TEST -Iinclude src/vmm.c tests/test_vmm_host.c -o build/test_vmm_host
+./build/test_vmm_host
+M7 VMM host tests PASS
+nm -u build/vmm.o
+objdump -dr build/vmm.o > build/vmm.objdump.txt
+grep -q "invlpg" build/vmm.objdump.txt
+grep -q "cr3" build/vmm.objdump.txt
+make[1]: Leaving directory '/mnt/data/OS_repo/mcsos'
+make -f Makefile.m8 m8-all CC=clang
+make[1]: Entering directory '/mnt/data/OS_repo/mcsos'
+mkdir -p build/m8
+clang -std=c17 -Wall -Wextra -Werror -Iinclude tests/test_kmem.c kernel/mm/kmem.c -o build/m8/test_kmem
+./build/m8/test_kmem | tee build/m8/test_kmem.log
+M8 kmem host tests: PASS
+clang -std=c17 -Wall -Wextra -Werror -Iinclude -ffreestanding -fno-builtin -fno-stack-protector -mno-red-zone -c kernel/mm/kmem.c -o build/m8/kmem.freestanding.o
+nm -u build/m8/kmem.freestanding.o | tee build/m8/nm_u.txt
+test ! -s build/m8/nm_u.txt
+readelf -h build/m8/kmem.freestanding.o > build/m8/readelf_h.txt
+objdump -dr build/m8/kmem.freestanding.o > build/m8/kmem.objdump.txt
+make[1]: Leaving directory '/mnt/data/OS_repo/mcsos'
+make -f Makefile.m9 m9-all
+make[1]: Entering directory '/mnt/data/OS_repo/mcsos'
+mkdir -p build/m9
+clang -std=c17 -Wall -Wextra -Werror -DMCSOS_HOST_TEST -Iinclude tests/test_scheduler.c kernel/mcsos_thread.c -o build/m9/m9_host_test
+build/m9/m9_host_test | tee build/m9/test_scheduler.log
+M9 scheduler host unit test PASS
+clang -target x86_64-unknown-none-elf -std=c17 -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -Wall -Wextra -Werror -Iinclude -c kernel/mcsos_thread.c -o build/m9/mcsos_thread.freestanding.o
+clang -target x86_64-unknown-none-elf -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -c arch/x86_64/context_switch.S -o build/m9/context_switch.o
+ld.lld -r build/m9/mcsos_thread.freestanding.o build/m9/context_switch.o -o build/m9/m9_scheduler_combined.o
+nm -u build/m9/m9_scheduler_combined.o | tee build/m9/nm_undefined.log
+readelf -h build/m9/m9_scheduler_combined.o | tee build/m9/readelf_header.log
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              REL (Relocatable file)
+  Machine:                           Advanced Micro Devices X86-64
+  Version:                           0x1
+  Entry point address:               0x0
+  Start of program headers:          0 (bytes into file)
+  Start of section headers:          3880 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           0 (bytes)
+  Number of program headers:         0
+  Size of section headers:           64 (bytes)
+  Number of section headers:         10
+  Section header string table index: 8
+objdump -d build/m9/m9_scheduler_combined.o | grep -E 'mcsos_context_switch|jmp|ret|hlt' | tee build/m9/objdump_key.log
+   4:	eb 00                	jmp    6 <mcsos_thread_trampoline+0x6>
+   6:	f4                   	hlt
+   7:	eb fd                	jmp    6 <mcsos_thread_trampoline+0x6>
+  35:	e9 23 01 00 00       	jmp    15d <mcsos_scheduler_init+0x14d>
+ 165:	c3                   	ret
+ 1dd:	c3                   	ret
+ 220:	e9 5a 01 00 00       	jmp    37f <mcsos_thread_prepare+0x19f>
+ 236:	e9 44 01 00 00       	jmp    37f <mcsos_thread_prepare+0x19f>
+ 260:	e9 1a 01 00 00       	jmp    37f <mcsos_thread_prepare+0x19f>
+ 292:	e9 e8 00 00 00       	jmp    37f <mcsos_thread_prepare+0x19f>
+ 387:	c3                   	ret
+ 3b8:	c3                   	ret
+ 3f6:	e9 9c 00 00 00       	jmp    497 <mcsos_sched_enqueue+0xd7>
+ 420:	eb 75                	jmp    497 <mcsos_sched_enqueue+0xd7>
+ 45f:	eb 1f                	jmp    480 <mcsos_sched_enqueue+0xc0>
+ 49f:	c3                   	ret
+ 4dc:	c3                   	ret
+ 505:	eb 7d                	jmp    584 <mcsos_sched_pick_next+0xa4>
+ 526:	eb 5c                	jmp    584 <mcsos_sched_pick_next+0xa4>
+ 58d:	c3                   	ret
+ 5c5:	e9 04 01 00 00       	jmp    6ce <mcsos_sched_yield+0x13e>
+ 5f7:	e9 d2 00 00 00       	jmp    6ce <mcsos_sched_yield+0x13e>
+ 618:	e9 b1 00 00 00       	jmp    6ce <mcsos_sched_yield+0x13e>
+ 65c:	eb 70                	jmp    6ce <mcsos_sched_yield+0x13e>
+ 65e:	eb 00                	jmp    660 <mcsos_sched_yield+0xd0>
+ 6d6:	c3                   	ret
+ 715:	eb 30                	jmp    747 <mcsos_sched_tick+0x67>
+ 74f:	c3                   	ret
+ 785:	eb 34                	jmp    7bb <mcsos_thread_block_current+0x6b>
+ 79f:	eb 1a                	jmp    7bb <mcsos_thread_block_current+0x6b>
+ 7c3:	c3                   	ret
+ 7f5:	eb 23                	jmp    81a <mcsos_thread_mark_ready+0x4a>
+ 808:	eb 10                	jmp    81a <mcsos_thread_mark_ready+0x4a>
+ 822:	c3                   	ret
+ 855:	eb 40                	jmp    897 <mcsos_sched_ready_count+0x67>
+ 88d:	eb dc                	jmp    86b <mcsos_sched_ready_count+0x3b>
+ 8a0:	c3                   	ret
+ 8e5:	e9 dc 00 00 00       	jmp    9c6 <mcsos_sched_validate+0x116>
+ 930:	e9 91 00 00 00       	jmp    9c6 <mcsos_sched_validate+0x116>
+ 949:	eb 7b                	jmp    9c6 <mcsos_sched_validate+0x116>
+ 98a:	eb 3a                	jmp    9c6 <mcsos_sched_validate+0x116>
+ 98c:	e9 75 ff ff ff       	jmp    906 <mcsos_sched_validate+0x56>
+ 9a6:	eb 1e                	jmp    9c6 <mcsos_sched_validate+0x116>
+ 9bd:	eb 07                	jmp    9c6 <mcsos_sched_validate+0x116>
+ 9ce:	c3                   	ret
+00000000000009d0 <mcsos_context_switch>:
+ 9d0:	48 8d 05 3d 00 00 00 	lea    0x3d(%rip),%rax        # a14 <mcsos_context_switch+0x44>
+ a11:	ff 66 38             	jmp    *0x38(%rsi)
+ a14:	c3                   	ret
+sha256sum build/m9/m9_host_test build/m9/m9_scheduler_combined.o | tee build/m9/sha256.log
+e3a4a12942237e6eadc8b632535324df345e7e7f6665fb49b062a13d3369c0ac  build/m9/m9_host_test
+ee820d4eca8430330fcbc986822484d8cc6b40ef766dc4b91b8cf49b09db6788  build/m9/m9_scheduler_combined.o
+make[1]: Leaving directory '/mnt/data/OS_repo/mcsos'
+make -f Makefile.m10 test
+make[1]: Entering directory '/mnt/data/OS_repo/mcsos'
+clang -Iinclude -Wall -Wextra -Werror -std=c17 -O2 -g tests/test_syscall_host.c kernel/syscall/syscall.c -o build/test_syscall_host
+./build/test_syscall_host
+M10 syscall host tests passed
+clang -Iinclude -Wall -Wextra -Werror -std=c17 -target x86_64-elf -ffreestanding -fno-stack-protector -fno-builtin -mno-red-zone -O2 -g -c kernel/syscall/syscall.c -o build/syscall.o
+clang -target x86_64-elf -c kernel/syscall/syscall_entry.S -o build/syscall_entry.o
+ld -r build/syscall.o build/syscall_entry.o -o build/m10_syscall_combined.o
+nm -u build/m10_syscall_combined.o > build/nm_undefined.txt
+readelf -h build/m10_syscall_combined.o > build/readelf_header.txt
+objdump -dr build/m10_syscall_combined.o > build/objdump.txt
+sha256sum build/test_syscall_host build/m10_syscall_combined.o > build/SHA256SUMS
+grep -q "Machine:.*Advanced Micro Devices X86-64" build/readelf_header.txt
+grep -q "x86_64_syscall_int80_stub" build/objdump.txt
+grep -q "iretq" build/objdump.txt
+make[1]: Leaving directory '/mnt/data/OS_repo/mcsos'
+make -f Makefile.m11 all
+make[1]: Entering directory '/mnt/data/OS_repo/mcsos'
+mkdir -p build/m11
+clang -std=c17 -Wall -Wextra -Werror -O2 -g -Iinclude/mcsos/user kernel/user/m11_elf_loader.c tests/m11/m11_host_test.c -o build/m11/m11_host_test
+./build/m11/m11_host_test
+PASS valid ELF64 image: M11_OK
+PASS valid plan fields: entry=0x401000 segments=2
+PASS bad magic: M11_ERR_MAGIC
+PASS bad machine: M11_ERR_MACHINE
+PASS entry outside user range: M11_ERR_ENTRY
+PASS memsz below filesz: M11_ERR_SEGBOUNDS
+PASS file range outside image: M11_ERR_SEGBOUNDS
+PASS bad alignment: M11_ERR_ALIGN
+PASS segment outside user range: M11_ERR_SEGRANGE
+M11 host tests passed.
+mkdir -p build/m11
+clang --target=x86_64-unknown-none -std=c17 -Wall -Wextra -Werror -O2 -g -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -mno-red-zone -Iinclude/mcsos/user -c kernel/user/m11_elf_loader.c -o build/m11/m11_elf_loader.o
+nm -u build/m11/m11_elf_loader.o > build/m11/m11_nm_undefined.txt
+test ! -s build/m11/m11_nm_undefined.txt
+readelf -h build/m11/m11_elf_loader.o > build/m11/m11_readelf_header.txt
+objdump -dr build/m11/m11_elf_loader.o > build/m11/m11_objdump.txt
+sha256sum build/m11/m11_elf_loader.o kernel/user/m11_elf_loader.c include/mcsos/user/m11_elf_loader.h tests/m11/m11_host_test.c > build/m11/m11_sha256.txt
+grep -q 'ELF64' build/m11/m11_readelf_header.txt
+grep -q 'm11_elf64_plan_load' build/m11/m11_objdump.txt
+make[1]: Leaving directory '/mnt/data/OS_repo/mcsos'
+make -f Makefile.m12 all CC=clang HOSTCC=clang
+make[1]: Entering directory '/mnt/data/OS_repo/mcsos'
+mkdir -p build/m12
+clang -std=c17 -Wall -Wextra -Werror -Iinclude -O2 -pthread kernel/sync/lockdep.c kernel/sync/spinlock.c kernel/sync/mutex.c tests/m12_sync_host_test.c -o build/m12/m12_sync_host_test
+build/m12/m12_sync_host_test | tee build/m12/host-test.log
+[PASS] M12 synchronization host tests passed
+clang -std=c17 -Wall -Wextra -Werror -Iinclude -target x86_64-elf -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -mno-red-zone -O2 -c kernel/sync/lockdep.c -o build/m12/lockdep.o
+clang -std=c17 -Wall -Wextra -Werror -Iinclude -target x86_64-elf -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -mno-red-zone -O2 -c kernel/sync/spinlock.c -o build/m12/spinlock.o
+clang -std=c17 -Wall -Wextra -Werror -Iinclude -target x86_64-elf -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -mno-red-zone -O2 -c kernel/sync/mutex.c -o build/m12/mutex.o
+nm -u build/m12/lockdep.o build/m12/spinlock.o build/m12/mutex.o | tee build/m12/nm-undefined.txt
+
+build/m12/lockdep.o:
+
+build/m12/spinlock.o:
+
+build/m12/mutex.o:
+readelf -h build/m12/lockdep.o | tee build/m12/readelf-lockdep.txt
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              REL (Relocatable file)
+  Machine:                           Advanced Micro Devices X86-64
+  Version:                           0x1
+  Entry point address:               0x0
+  Start of program headers:          0 (bytes into file)
+  Start of section headers:          920 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           0 (bytes)
+  Number of program headers:         0
+  Size of section headers:           64 (bytes)
+  Number of section headers:         7
+  Section header string table index: 1
+objdump -d build/m12/spinlock.o | tee build/m12/objdump-spinlock.txt
+
+build/m12/spinlock.o:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <mcs_spin_init>:
+   0:	55                   	push   %rbp
+   1:	48 89 e5             	mov    %rsp,%rbp
+   4:	48 85 ff             	test   %rdi,%rdi
+   7:	74 0d                	je     16 <mcs_spin_init+0x16>
+   9:	c7 07 00 00 00 00    	movl   $0x0,(%rdi)
+   f:	89 77 04             	mov    %esi,0x4(%rdi)
+  12:	48 89 57 08          	mov    %rdx,0x8(%rdi)
+  16:	5d                   	pop    %rbp
+  17:	c3                   	ret
+  18:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
+  1f:	00 
+
+0000000000000020 <mcs_spin_try_lock>:
+  20:	55                   	push   %rbp
+  21:	48 89 e5             	mov    %rsp,%rbp
+  24:	48 85 ff             	test   %rdi,%rdi
+  27:	74 0e                	je     37 <mcs_spin_try_lock+0x17>
+  29:	b8 01 00 00 00       	mov    $0x1,%eax
+  2e:	87 07                	xchg   %eax,(%rdi)
+  30:	85 c0                	test   %eax,%eax
+  32:	0f 94 c0             	sete   %al
+  35:	5d                   	pop    %rbp
+  36:	c3                   	ret
+  37:	31 c0                	xor    %eax,%eax
+  39:	5d                   	pop    %rbp
+  3a:	c3                   	ret
+  3b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+
+0000000000000040 <mcs_spin_lock>:
+  40:	55                   	push   %rbp
+  41:	48 89 e5             	mov    %rsp,%rbp
+  44:	66 66 66 2e 0f 1f 84 	data16 data16 cs nopw 0x0(%rax,%rax,1)
+  4b:	00 00 00 00 00 
+  50:	48 85 ff             	test   %rdi,%rdi
+  53:	74 1d                	je     72 <mcs_spin_lock+0x32>
+  55:	b8 01 00 00 00       	mov    $0x1,%eax
+  5a:	87 07                	xchg   %eax,(%rdi)
+  5c:	85 c0                	test   %eax,%eax
+  5e:	75 12                	jne    72 <mcs_spin_lock+0x32>
+  60:	eb 18                	jmp    7a <mcs_spin_lock+0x3a>
+  62:	66 66 66 66 66 2e 0f 	data16 data16 data16 data16 cs nopw 0x0(%rax,%rax,1)
+  69:	1f 84 00 00 00 00 00 
+  70:	f3 90                	pause
+  72:	8b 07                	mov    (%rdi),%eax
+  74:	85 c0                	test   %eax,%eax
+  76:	75 f8                	jne    70 <mcs_spin_lock+0x30>
+  78:	eb d6                	jmp    50 <mcs_spin_lock+0x10>
+  7a:	5d                   	pop    %rbp
+  7b:	c3                   	ret
+  7c:	0f 1f 40 00          	nopl   0x0(%rax)
+
+0000000000000080 <mcs_spin_unlock>:
+  80:	55                   	push   %rbp
+  81:	48 89 e5             	mov    %rsp,%rbp
+  84:	48 85 ff             	test   %rdi,%rdi
+  87:	74 06                	je     8f <mcs_spin_unlock+0xf>
+  89:	c7 07 00 00 00 00    	movl   $0x0,(%rdi)
+  8f:	5d                   	pop    %rbp
+  90:	c3                   	ret
+  91:	66 66 66 66 66 66 2e 	data16 data16 data16 data16 data16 cs nopw 0x0(%rax,%rax,1)
+  98:	0f 1f 84 00 00 00 00 
+  9f:	00 
+
+00000000000000a0 <mcs_spin_is_locked>:
+  a0:	55                   	push   %rbp
+  a1:	48 89 e5             	mov    %rsp,%rbp
+  a4:	48 85 ff             	test   %rdi,%rdi
+  a7:	74 09                	je     b2 <mcs_spin_is_locked+0x12>
+  a9:	8b 07                	mov    (%rdi),%eax
+  ab:	85 c0                	test   %eax,%eax
+  ad:	0f 95 c0             	setne  %al
+  b0:	5d                   	pop    %rbp
+  b1:	c3                   	ret
+  b2:	31 c0                	xor    %eax,%eax
+  b4:	5d                   	pop    %rbp
+  b5:	c3                   	ret
+sha256sum build/m12/lockdep.o build/m12/spinlock.o build/m12/mutex.o build/m12/m12_sync_host_test > build/m12/sha256sums.txt
+make[1]: Leaving directory '/mnt/data/OS_repo/mcsos'
+make -f Makefile.m13 m13-all CC=clang CLANG=clang
+make[1]: Entering directory '/mnt/data/OS_repo/mcsos'
+mkdir -p build/m13
+clang -std=c17 -Wall -Wextra -Werror -O2 -Iinclude tests/m13_vfs_host_test.c kernel/vfs/ramfs.c kernel/vfs/fd.c kernel/vfs/sys_vfs.c -o build/m13/m13_vfs_host_test
+./build/m13/m13_vfs_host_test | tee build/m13/host-test.log
+M13 VFS/FD/RAMFS host tests: PASS
+mkdir -p build/m13
+clang -target x86_64-elf -std=c17 -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -mno-red-zone -Wall -Wextra -Werror -O2 -Iinclude -c kernel/vfs/ramfs.c -o build/m13/ramfs.o
+mkdir -p build/m13
+clang -target x86_64-elf -std=c17 -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -mno-red-zone -Wall -Wextra -Werror -O2 -Iinclude -c kernel/vfs/fd.c -o build/m13/fd.o
+mkdir -p build/m13
+clang -target x86_64-elf -std=c17 -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -mno-red-zone -Wall -Wextra -Werror -O2 -Iinclude -c kernel/vfs/sys_vfs.c -o build/m13/sys_vfs.o
+ld -r -m elf_x86_64 build/m13/ramfs.o build/m13/fd.o build/m13/sys_vfs.o -o build/m13/vfs.o
+nm -u build/m13/vfs.o > build/m13/nm-undefined.txt
+readelf -h build/m13/vfs.o > build/m13/readelf-vfs.txt
+objdump -dr build/m13/vfs.o > build/m13/objdump-vfs.txt
+sha256sum build/m13/ramfs.o build/m13/fd.o build/m13/sys_vfs.o build/m13/vfs.o build/m13/m13_vfs_host_test > build/m13/sha256sums.txt
+test ! -s build/m13/nm-undefined.txt
+make[1]: Leaving directory '/mnt/data/OS_repo/mcsos'
+make -f Makefile.m14 all CC=clang CLANG=clang
+make[1]: Entering directory '/mnt/data/OS_repo/mcsos'
+mkdir -p build
+clang -std=c17 -Wall -Wextra -Werror -Iinclude -O2 tests/host/test_m14_block.c kernel/block/block.c kernel/block/ramblk.c kernel/block/bcache.c -o build/test_m14_block
+./build/test_m14_block
+M14 host tests PASS
+mkdir -p build
+clang --target=x86_64-elf -std=c17 -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -mno-red-zone -Wall -Wextra -Werror -Iinclude -O2 -c kernel/block/block.c -o build/block.o
+mkdir -p build
+clang --target=x86_64-elf -std=c17 -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -mno-red-zone -Wall -Wextra -Werror -Iinclude -O2 -c kernel/block/ramblk.c -o build/ramblk.o
+mkdir -p build
+clang --target=x86_64-elf -std=c17 -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -mno-red-zone -Wall -Wextra -Werror -Iinclude -O2 -c kernel/block/bcache.c -o build/bcache.o
+mkdir -p artifacts
+ld -r -o build/m14_block_layer.o build/block.o build/ramblk.o build/bcache.o
+nm -u build/m14_block_layer.o > artifacts/m14_nm_undefined.txt
+readelf -h build/m14_block_layer.o > artifacts/m14_readelf_block.txt
+objdump -dr build/m14_block_layer.o > artifacts/m14_objdump_block.txt
+sha256sum build/block.o build/ramblk.o build/bcache.o build/m14_block_layer.o build/test_m14_block > artifacts/m14_sha256.txt
+test ! -s artifacts/m14_nm_undefined.txt
+make[1]: Leaving directory '/mnt/data/OS_repo/mcsos'
+make -f Makefile.m15 m15-all CC=clang
+make[1]: Entering directory '/mnt/data/OS_repo/mcsos'
+mkdir -p artifacts/m15
+clang -std=c17 -Wall -Wextra -Werror -O2 -g -I. tests/m15/test_mcsfs1.c fs/mcsfs1/mcsfs1.c -o artifacts/m15/test_mcsfs1
+mkdir -p artifacts/m15
+clang -target x86_64-elf -std=c17 -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -mno-red-zone -Wall -Wextra -Werror -O2 -g -I. -c fs/mcsfs1/mcsfs1.c -o artifacts/m15/mcsfs1.o
+ld -r artifacts/m15/mcsfs1.o -o artifacts/m15/mcsfs1.rel.o
+./artifacts/m15/test_mcsfs1 | tee artifacts/m15/host_test.txt
+M15 host test passed: flush_count=5
+nm -u artifacts/m15/mcsfs1.rel.o | tee artifacts/m15/nm_undefined.txt
+test ! -s artifacts/m15/nm_undefined.txt
+readelf -h artifacts/m15/mcsfs1.rel.o | tee artifacts/m15/readelf_header.txt
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              REL (Relocatable file)
+  Machine:                           Advanced Micro Devices X86-64
+  Version:                           0x1
+  Entry point address:               0x0
+  Start of program headers:          0 (bytes into file)
+  Start of section headers:          42688 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               64 (bytes)
+  Size of program headers:           0 (bytes)
+  Number of program headers:         0
+  Size of section headers:           64 (bytes)
+  Number of section headers:         26
+  Section header string table index: 25
+objdump -dr artifacts/m15/mcsfs1.rel.o | tee artifacts/m15/objdump.txt >/dev/null
+sha256sum artifacts/m15/* | tee artifacts/m15/SHA256SUMS.txt
+51398b24103c7f24b278a4e19012702cd40ff7a1bba5227b1bce55e48cd96017  artifacts/m15/host_test.txt
+54cab5601786e1a41ab0dd02742738844de55c4c85e8b9a2b278820ef1b5d46b  artifacts/m15/mcsfs1.o
+b7b8c8d1fc279ce3a93377ef76b83ecf7705406a30acf0458818cd3178cc3715  artifacts/m15/mcsfs1.rel.o
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  artifacts/m15/nm_undefined.txt
+105754f2a192a0daac4e91c7675cd2a333849e17ee945df6e7ef2327ea6c3fe7  artifacts/m15/objdump.txt
+b2a8280c74b47f9c6161b91d569271b1831ba80af2bbf45b2b7e69bd3db1b9c5  artifacts/m15/readelf_header.txt
+b8dd0b8fe9a222f7e9e6fc206d7df43f300bd06139fcda7234d50211f2b80617  artifacts/m15/test_mcsfs1
+make[1]: Leaving directory '/mnt/data/OS_repo/mcsos'
+make -f Makefile.m16 all CLANG=clang
+make[1]: Entering directory '/mnt/data/OS_repo/mcsos'
+mkdir -p build/m16
+clang -std=c17 -Wall -Wextra -Werror -O2 -DMCSOS_M16_HOST_TEST kernel/fs/mcsfs1j/m16_mcsfs_journal.c -o build/m16/m16_host_test
+./build/m16/m16_host_test
+M16 host tests PASS
+clang -std=c17 -Wall -Wextra -Werror -O2 -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -mno-red-zone -target x86_64-elf -c kernel/fs/mcsfs1j/m16_mcsfs_journal.c -o build/m16/m16_mcsfs_journal.o
+nm -u build/m16/m16_mcsfs_journal.o > build/m16/nm_undefined.txt
+readelf -h build/m16/m16_mcsfs_journal.o > build/m16/readelf_header.txt
+objdump -dr build/m16/m16_mcsfs_journal.o > build/m16/objdump_disasm.txt
+sha256sum build/m16/m16_mcsfs_journal.o > build/m16/sha256sum.txt
+test ! -s build/m16/nm_undefined.txt
+grep -q 'ELF64' build/m16/readelf_header.txt
+grep -q 'Advanced Micro Devices X86-64' build/m16/readelf_header.txt
+make[1]: Leaving directory '/mnt/data/OS_repo/mcsos'
