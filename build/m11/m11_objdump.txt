@@ -1,0 +1,411 @@
+
+build/m11/m11_elf_loader.o:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <m11_validate_user_range>:
+   0:	55                   	push   %rbp
+   1:	48 89 e5             	mov    %rsp,%rbp
+   4:	48 39 f7             	cmp    %rsi,%rdi
+   7:	0f 93 c0             	setae  %al
+   a:	48 85 c9             	test   %rcx,%rcx
+   d:	41 0f 94 c0          	sete   %r8b
+  11:	41 08 c0             	or     %al,%r8b
+  14:	b8 f2 ff ff ff       	mov    $0xfffffff2,%eax
+  19:	75 26                	jne    41 <m11_validate_user_range+0x41>
+  1b:	48 01 d1             	add    %rdx,%rcx
+  1e:	41 0f 92 c0          	setb   %r8b
+  22:	48 39 fa             	cmp    %rdi,%rdx
+  25:	40 0f 92 c7          	setb   %dil
+  29:	44 08 c7             	or     %r8b,%dil
+  2c:	75 13                	jne    41 <m11_validate_user_range+0x41>
+  2e:	31 c0                	xor    %eax,%eax
+  30:	48 39 d1             	cmp    %rdx,%rcx
+  33:	ba f2 ff ff ff       	mov    $0xfffffff2,%edx
+  38:	0f 46 c2             	cmovbe %edx,%eax
+  3b:	48 39 f1             	cmp    %rsi,%rcx
+  3e:	0f 47 c2             	cmova  %edx,%eax
+  41:	5d                   	pop    %rbp
+  42:	c3                   	ret
+  43:	66 66 66 66 2e 0f 1f 	data16 data16 data16 cs nopw 0x0(%rax,%rax,1)
+  4a:	84 00 00 00 00 00 
+
+0000000000000050 <m11_elf64_plan_load>:
+  50:	48 85 ff             	test   %rdi,%rdi
+  53:	0f 94 c0             	sete   %al
+  56:	4d 85 c0             	test   %r8,%r8
+  59:	41 0f 94 c1          	sete   %r9b
+  5d:	41 08 c1             	or     %al,%r9b
+  60:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+  65:	0f 85 07 03 00 00    	jne    372 <m11_elf64_plan_load+0x322>
+  6b:	49 c7 00 00 00 00 00 	movq   $0x0,(%r8)
+  72:	41 c7 40 08 00 00 00 	movl   $0x0,0x8(%r8)
+  79:	00 
+  7a:	0f 57 c0             	xorps  %xmm0,%xmm0
+  7d:	41 0f 11 40 10       	movups %xmm0,0x10(%r8)
+  82:	41 0f 11 40 20       	movups %xmm0,0x20(%r8)
+  87:	49 c7 40 30 00 00 00 	movq   $0x0,0x30(%r8)
+  8e:	00 
+  8f:	41 c7 40 38 00 00 00 	movl   $0x0,0x38(%r8)
+  96:	00 
+  97:	41 0f 11 40 40       	movups %xmm0,0x40(%r8)
+  9c:	41 0f 11 40 50       	movups %xmm0,0x50(%r8)
+  a1:	49 c7 40 60 00 00 00 	movq   $0x0,0x60(%r8)
+  a8:	00 
+  a9:	41 c7 40 68 00 00 00 	movl   $0x0,0x68(%r8)
+  b0:	00 
+  b1:	41 0f 11 40 70       	movups %xmm0,0x70(%r8)
+  b6:	41 0f 11 80 80 00 00 	movups %xmm0,0x80(%r8)
+  bd:	00 
+  be:	49 c7 80 90 00 00 00 	movq   $0x0,0x90(%r8)
+  c5:	00 00 00 00 
+  c9:	41 c7 80 98 00 00 00 	movl   $0x0,0x98(%r8)
+  d0:	00 00 00 00 
+  d4:	41 0f 11 80 a0 00 00 	movups %xmm0,0xa0(%r8)
+  db:	00 
+  dc:	41 0f 11 80 b0 00 00 	movups %xmm0,0xb0(%r8)
+  e3:	00 
+  e4:	49 c7 80 c0 00 00 00 	movq   $0x0,0xc0(%r8)
+  eb:	00 00 00 00 
+  ef:	41 c7 80 c8 00 00 00 	movl   $0x0,0xc8(%r8)
+  f6:	00 00 00 00 
+  fa:	41 0f 11 80 d0 00 00 	movups %xmm0,0xd0(%r8)
+ 101:	00 
+ 102:	41 0f 11 80 e0 00 00 	movups %xmm0,0xe0(%r8)
+ 109:	00 
+ 10a:	49 c7 80 f0 00 00 00 	movq   $0x0,0xf0(%r8)
+ 111:	00 00 00 00 
+ 115:	41 c7 80 f8 00 00 00 	movl   $0x0,0xf8(%r8)
+ 11c:	00 00 00 00 
+ 120:	41 0f 11 80 00 01 00 	movups %xmm0,0x100(%r8)
+ 127:	00 
+ 128:	41 0f 11 80 10 01 00 	movups %xmm0,0x110(%r8)
+ 12f:	00 
+ 130:	49 c7 80 20 01 00 00 	movq   $0x0,0x120(%r8)
+ 137:	00 00 00 00 
+ 13b:	41 c7 80 28 01 00 00 	movl   $0x0,0x128(%r8)
+ 142:	00 00 00 00 
+ 146:	41 0f 11 80 30 01 00 	movups %xmm0,0x130(%r8)
+ 14d:	00 
+ 14e:	41 0f 11 80 40 01 00 	movups %xmm0,0x140(%r8)
+ 155:	00 
+ 156:	49 c7 80 50 01 00 00 	movq   $0x0,0x150(%r8)
+ 15d:	00 00 00 00 
+ 161:	41 c7 80 58 01 00 00 	movl   $0x0,0x158(%r8)
+ 168:	00 00 00 00 
+ 16c:	41 0f 11 80 60 01 00 	movups %xmm0,0x160(%r8)
+ 173:	00 
+ 174:	41 0f 11 80 70 01 00 	movups %xmm0,0x170(%r8)
+ 17b:	00 
+ 17c:	49 c7 80 80 01 00 00 	movq   $0x0,0x180(%r8)
+ 183:	00 00 00 00 
+ 187:	41 c7 80 88 01 00 00 	movl   $0x0,0x188(%r8)
+ 18e:	00 00 00 00 
+ 192:	b8 fe ff ff ff       	mov    $0xfffffffe,%eax
+ 197:	48 83 fe 40          	cmp    $0x40,%rsi
+ 19b:	0f 82 d1 01 00 00    	jb     372 <m11_elf64_plan_load+0x322>
+ 1a1:	b8 fd ff ff ff       	mov    $0xfffffffd,%eax
+ 1a6:	80 3f 7f             	cmpb   $0x7f,(%rdi)
+ 1a9:	0f 85 c3 01 00 00    	jne    372 <m11_elf64_plan_load+0x322>
+ 1af:	80 7f 01 45          	cmpb   $0x45,0x1(%rdi)
+ 1b3:	0f 85 b9 01 00 00    	jne    372 <m11_elf64_plan_load+0x322>
+ 1b9:	80 7f 02 4c          	cmpb   $0x4c,0x2(%rdi)
+ 1bd:	0f 85 af 01 00 00    	jne    372 <m11_elf64_plan_load+0x322>
+ 1c3:	80 7f 03 46          	cmpb   $0x46,0x3(%rdi)
+ 1c7:	0f 85 a5 01 00 00    	jne    372 <m11_elf64_plan_load+0x322>
+ 1cd:	b8 fc ff ff ff       	mov    $0xfffffffc,%eax
+ 1d2:	80 7f 04 02          	cmpb   $0x2,0x4(%rdi)
+ 1d6:	0f 85 96 01 00 00    	jne    372 <m11_elf64_plan_load+0x322>
+ 1dc:	b8 fb ff ff ff       	mov    $0xfffffffb,%eax
+ 1e1:	80 7f 05 01          	cmpb   $0x1,0x5(%rdi)
+ 1e5:	0f 85 87 01 00 00    	jne    372 <m11_elf64_plan_load+0x322>
+ 1eb:	b8 fa ff ff ff       	mov    $0xfffffffa,%eax
+ 1f0:	80 7f 06 01          	cmpb   $0x1,0x6(%rdi)
+ 1f4:	0f 85 78 01 00 00    	jne    372 <m11_elf64_plan_load+0x322>
+ 1fa:	83 7f 14 01          	cmpl   $0x1,0x14(%rdi)
+ 1fe:	0f 85 6e 01 00 00    	jne    372 <m11_elf64_plan_load+0x322>
+ 204:	44 0f b7 4f 10       	movzwl 0x10(%rdi),%r9d
+ 209:	41 83 e1 fe          	and    $0xfffffffe,%r9d
+ 20d:	b8 f9 ff ff ff       	mov    $0xfffffff9,%eax
+ 212:	66 41 83 f9 02       	cmp    $0x2,%r9w
+ 217:	0f 85 55 01 00 00    	jne    372 <m11_elf64_plan_load+0x322>
+ 21d:	b8 f8 ff ff ff       	mov    $0xfffffff8,%eax
+ 222:	66 83 7f 12 3e       	cmpw   $0x3e,0x12(%rdi)
+ 227:	0f 85 45 01 00 00    	jne    372 <m11_elf64_plan_load+0x322>
+ 22d:	b8 f7 ff ff ff       	mov    $0xfffffff7,%eax
+ 232:	66 83 7f 34 40       	cmpw   $0x40,0x34(%rdi)
+ 237:	0f 85 35 01 00 00    	jne    372 <m11_elf64_plan_load+0x322>
+ 23d:	55                   	push   %rbp
+ 23e:	48 89 e5             	mov    %rsp,%rbp
+ 241:	41 57                	push   %r15
+ 243:	41 56                	push   %r14
+ 245:	41 55                	push   %r13
+ 247:	41 54                	push   %r12
+ 249:	53                   	push   %rbx
+ 24a:	48 83 ec 28          	sub    $0x28,%rsp
+ 24e:	44 0f b7 77 38       	movzwl 0x38(%rdi),%r14d
+ 253:	b8 f5 ff ff ff       	mov    $0xfffffff5,%eax
+ 258:	4d 85 f6             	test   %r14,%r14
+ 25b:	0f 84 03 01 00 00    	je     364 <m11_elf64_plan_load+0x314>
+ 261:	b8 f6 ff ff ff       	mov    $0xfffffff6,%eax
+ 266:	66 83 7f 36 38       	cmpw   $0x38,0x36(%rdi)
+ 26b:	0f 85 f3 00 00 00    	jne    364 <m11_elf64_plan_load+0x314>
+ 271:	49 6b c6 38          	imul   $0x38,%r14,%rax
+ 275:	4c 8b 4f 20          	mov    0x20(%rdi),%r9
+ 279:	4c 01 c8             	add    %r9,%rax
+ 27c:	41 0f 92 c2          	setb   %r10b
+ 280:	48 39 f0             	cmp    %rsi,%rax
+ 283:	0f 97 c0             	seta   %al
+ 286:	44 08 d0             	or     %r10b,%al
+ 289:	b8 f5 ff ff ff       	mov    $0xfffffff5,%eax
+ 28e:	0f 85 d0 00 00 00    	jne    364 <m11_elf64_plan_load+0x314>
+ 294:	48 89 75 b8          	mov    %rsi,-0x48(%rbp)
+ 298:	4c 89 45 d0          	mov    %r8,-0x30(%rbp)
+ 29c:	48 89 4d c0          	mov    %rcx,-0x40(%rbp)
+ 2a0:	48 89 55 c8          	mov    %rdx,-0x38(%rbp)
+ 2a4:	48 39 ca             	cmp    %rcx,%rdx
+ 2a7:	0f 83 b2 00 00 00    	jae    35f <m11_elf64_plan_load+0x30f>
+ 2ad:	48 89 f9             	mov    %rdi,%rcx
+ 2b0:	48 8b 57 18          	mov    0x18(%rdi),%rdx
+ 2b4:	48 89 d0             	mov    %rdx,%rax
+ 2b7:	48 ff c0             	inc    %rax
+ 2ba:	40 0f 94 c6          	sete   %sil
+ 2be:	48 3b 55 c8          	cmp    -0x38(%rbp),%rdx
+ 2c2:	40 0f 92 c7          	setb   %dil
+ 2c6:	40 08 f7             	or     %sil,%dil
+ 2c9:	48 3b 45 c0          	cmp    -0x40(%rbp),%rax
+ 2cd:	0f 97 c0             	seta   %al
+ 2d0:	40 08 f8             	or     %dil,%al
+ 2d3:	48 8b 75 d0          	mov    -0x30(%rbp),%rsi
+ 2d7:	b8 f0 ff ff ff       	mov    $0xfffffff0,%eax
+ 2dc:	0f 85 82 00 00 00    	jne    364 <m11_elf64_plan_load+0x314>
+ 2e2:	48 8d 5e 10          	lea    0x10(%rsi),%rbx
+ 2e6:	4c 01 c9             	add    %r9,%rcx
+ 2e9:	48 89 16             	mov    %rdx,(%rsi)
+ 2ec:	45 31 ff             	xor    %r15d,%r15d
+ 2ef:	eb 0c                	jmp    2fd <m11_elf64_plan_load+0x2ad>
+ 2f1:	4c 89 e9             	mov    %r13,%rcx
+ 2f4:	48 83 c1 38          	add    $0x38,%rcx
+ 2f8:	49 ff ce             	dec    %r14
+ 2fb:	74 76                	je     373 <m11_elf64_plan_load+0x323>
+ 2fd:	49 89 cd             	mov    %rcx,%r13
+ 300:	83 39 01             	cmpl   $0x1,(%rcx)
+ 303:	75 ec                	jne    2f1 <m11_elf64_plan_load+0x2a1>
+ 305:	41 83 ff 08          	cmp    $0x8,%r15d
+ 309:	73 77                	jae    382 <m11_elf64_plan_load+0x332>
+ 30b:	4c 89 ef             	mov    %r13,%rdi
+ 30e:	48 8b 75 b8          	mov    -0x48(%rbp),%rsi
+ 312:	48 8b 55 c8          	mov    -0x38(%rbp),%rdx
+ 316:	48 8b 4d c0          	mov    -0x40(%rbp),%rcx
+ 31a:	e8 b1 01 00 00       	call   4d0 <m11_validate_load_segment>
+ 31f:	85 c0                	test   %eax,%eax
+ 321:	75 6f                	jne    392 <m11_elf64_plan_load+0x342>
+ 323:	44 89 f8             	mov    %r15d,%eax
+ 326:	48 8d 04 40          	lea    (%rax,%rax,2),%rax
+ 32a:	48 c1 e0 04          	shl    $0x4,%rax
+ 32e:	41 0f 10 45 08       	movups 0x8(%r13),%xmm0
+ 333:	0f 11 04 03          	movups %xmm0,(%rbx,%rax,1)
+ 337:	41 0f 10 45 20       	movups 0x20(%r13),%xmm0
+ 33c:	0f 11 44 03 10       	movups %xmm0,0x10(%rbx,%rax,1)
+ 341:	49 8b 55 30          	mov    0x30(%r13),%rdx
+ 345:	48 89 54 03 20       	mov    %rdx,0x20(%rbx,%rax,1)
+ 34a:	41 8b 4d 04          	mov    0x4(%r13),%ecx
+ 34e:	89 4c 03 28          	mov    %ecx,0x28(%rbx,%rax,1)
+ 352:	41 ff c7             	inc    %r15d
+ 355:	48 8b 45 d0          	mov    -0x30(%rbp),%rax
+ 359:	44 89 78 08          	mov    %r15d,0x8(%rax)
+ 35d:	eb 92                	jmp    2f1 <m11_elf64_plan_load+0x2a1>
+ 35f:	b8 f0 ff ff ff       	mov    $0xfffffff0,%eax
+ 364:	48 83 c4 28          	add    $0x28,%rsp
+ 368:	5b                   	pop    %rbx
+ 369:	41 5c                	pop    %r12
+ 36b:	41 5d                	pop    %r13
+ 36d:	41 5e                	pop    %r14
+ 36f:	41 5f                	pop    %r15
+ 371:	5d                   	pop    %rbp
+ 372:	c3                   	ret
+ 373:	31 c9                	xor    %ecx,%ecx
+ 375:	45 85 ff             	test   %r15d,%r15d
+ 378:	b8 f1 ff ff ff       	mov    $0xfffffff1,%eax
+ 37d:	0f 45 c1             	cmovne %ecx,%eax
+ 380:	eb e2                	jmp    364 <m11_elf64_plan_load+0x314>
+ 382:	48 8b 7d d0          	mov    -0x30(%rbp),%rdi
+ 386:	e8 25 00 00 00       	call   3b0 <m11_zero_plan>
+ 38b:	b8 f1 ff ff ff       	mov    $0xfffffff1,%eax
+ 390:	eb d2                	jmp    364 <m11_elf64_plan_load+0x314>
+ 392:	41 89 c4             	mov    %eax,%r12d
+ 395:	48 8b 7d d0          	mov    -0x30(%rbp),%rdi
+ 399:	e8 12 00 00 00       	call   3b0 <m11_zero_plan>
+ 39e:	44 89 e0             	mov    %r12d,%eax
+ 3a1:	eb c1                	jmp    364 <m11_elf64_plan_load+0x314>
+ 3a3:	66 66 66 66 2e 0f 1f 	data16 data16 data16 cs nopw 0x0(%rax,%rax,1)
+ 3aa:	84 00 00 00 00 00 
+
+00000000000003b0 <m11_zero_plan>:
+ 3b0:	55                   	push   %rbp
+ 3b1:	48 89 e5             	mov    %rsp,%rbp
+ 3b4:	48 c7 07 00 00 00 00 	movq   $0x0,(%rdi)
+ 3bb:	c7 47 08 00 00 00 00 	movl   $0x0,0x8(%rdi)
+ 3c2:	0f 57 c0             	xorps  %xmm0,%xmm0
+ 3c5:	0f 11 47 10          	movups %xmm0,0x10(%rdi)
+ 3c9:	0f 11 47 20          	movups %xmm0,0x20(%rdi)
+ 3cd:	48 c7 47 30 00 00 00 	movq   $0x0,0x30(%rdi)
+ 3d4:	00 
+ 3d5:	c7 47 38 00 00 00 00 	movl   $0x0,0x38(%rdi)
+ 3dc:	0f 11 47 40          	movups %xmm0,0x40(%rdi)
+ 3e0:	0f 11 47 50          	movups %xmm0,0x50(%rdi)
+ 3e4:	48 c7 47 60 00 00 00 	movq   $0x0,0x60(%rdi)
+ 3eb:	00 
+ 3ec:	c7 47 68 00 00 00 00 	movl   $0x0,0x68(%rdi)
+ 3f3:	0f 11 47 70          	movups %xmm0,0x70(%rdi)
+ 3f7:	0f 11 87 80 00 00 00 	movups %xmm0,0x80(%rdi)
+ 3fe:	48 c7 87 90 00 00 00 	movq   $0x0,0x90(%rdi)
+ 405:	00 00 00 00 
+ 409:	c7 87 98 00 00 00 00 	movl   $0x0,0x98(%rdi)
+ 410:	00 00 00 
+ 413:	0f 11 87 a0 00 00 00 	movups %xmm0,0xa0(%rdi)
+ 41a:	0f 11 87 b0 00 00 00 	movups %xmm0,0xb0(%rdi)
+ 421:	48 c7 87 c0 00 00 00 	movq   $0x0,0xc0(%rdi)
+ 428:	00 00 00 00 
+ 42c:	c7 87 c8 00 00 00 00 	movl   $0x0,0xc8(%rdi)
+ 433:	00 00 00 
+ 436:	0f 11 87 d0 00 00 00 	movups %xmm0,0xd0(%rdi)
+ 43d:	0f 11 87 e0 00 00 00 	movups %xmm0,0xe0(%rdi)
+ 444:	48 c7 87 f0 00 00 00 	movq   $0x0,0xf0(%rdi)
+ 44b:	00 00 00 00 
+ 44f:	c7 87 f8 00 00 00 00 	movl   $0x0,0xf8(%rdi)
+ 456:	00 00 00 
+ 459:	0f 11 87 00 01 00 00 	movups %xmm0,0x100(%rdi)
+ 460:	0f 11 87 10 01 00 00 	movups %xmm0,0x110(%rdi)
+ 467:	48 c7 87 20 01 00 00 	movq   $0x0,0x120(%rdi)
+ 46e:	00 00 00 00 
+ 472:	c7 87 28 01 00 00 00 	movl   $0x0,0x128(%rdi)
+ 479:	00 00 00 
+ 47c:	0f 11 87 30 01 00 00 	movups %xmm0,0x130(%rdi)
+ 483:	0f 11 87 40 01 00 00 	movups %xmm0,0x140(%rdi)
+ 48a:	48 c7 87 50 01 00 00 	movq   $0x0,0x150(%rdi)
+ 491:	00 00 00 00 
+ 495:	c7 87 58 01 00 00 00 	movl   $0x0,0x158(%rdi)
+ 49c:	00 00 00 
+ 49f:	0f 11 87 60 01 00 00 	movups %xmm0,0x160(%rdi)
+ 4a6:	0f 11 87 70 01 00 00 	movups %xmm0,0x170(%rdi)
+ 4ad:	48 c7 87 80 01 00 00 	movq   $0x0,0x180(%rdi)
+ 4b4:	00 00 00 00 
+ 4b8:	c7 87 88 01 00 00 00 	movl   $0x0,0x188(%rdi)
+ 4bf:	00 00 00 
+ 4c2:	5d                   	pop    %rbp
+ 4c3:	c3                   	ret
+ 4c4:	66 66 66 2e 0f 1f 84 	data16 data16 cs nopw 0x0(%rax,%rax,1)
+ 4cb:	00 00 00 00 00 
+
+00000000000004d0 <m11_validate_load_segment>:
+ 4d0:	8b 47 04             	mov    0x4(%rdi),%eax
+ 4d3:	83 f8 08             	cmp    $0x8,%eax
+ 4d6:	41 0f 93 c0          	setae  %r8b
+ 4da:	f7 d0                	not    %eax
+ 4dc:	a8 03                	test   $0x3,%al
+ 4de:	0f 94 c0             	sete   %al
+ 4e1:	44 08 c0             	or     %r8b,%al
+ 4e4:	b8 ef ff ff ff       	mov    $0xffffffef,%eax
+ 4e9:	75 12                	jne    4fd <m11_validate_load_segment+0x2d>
+ 4eb:	4c 8b 5f 20          	mov    0x20(%rdi),%r11
+ 4ef:	4c 8b 57 28          	mov    0x28(%rdi),%r10
+ 4f3:	4d 39 da             	cmp    %r11,%r10
+ 4f6:	73 06                	jae    4fe <m11_validate_load_segment+0x2e>
+ 4f8:	b8 f3 ff ff ff       	mov    $0xfffffff3,%eax
+ 4fd:	c3                   	ret
+ 4fe:	55                   	push   %rbp
+ 4ff:	48 89 e5             	mov    %rsp,%rbp
+ 502:	41 56                	push   %r14
+ 504:	53                   	push   %rbx
+ 505:	4c 8b 77 30          	mov    0x30(%rdi),%r14
+ 509:	49 83 fe 01          	cmp    $0x1,%r14
+ 50d:	77 73                	ja     582 <m11_validate_load_segment+0xb2>
+ 50f:	4c 8b 47 08          	mov    0x8(%rdi),%r8
+ 513:	4d 01 c3             	add    %r8,%r11
+ 516:	0f 92 c0             	setb   %al
+ 519:	49 39 f0             	cmp    %rsi,%r8
+ 51c:	0f 87 8b 00 00 00    	ja     5ad <m11_validate_load_segment+0xdd>
+ 522:	84 c0                	test   %al,%al
+ 524:	0f 85 83 00 00 00    	jne    5ad <m11_validate_load_segment+0xdd>
+ 52a:	b8 f3 ff ff ff       	mov    $0xfffffff3,%eax
+ 52f:	49 39 f3             	cmp    %rsi,%r11
+ 532:	0f 87 b7 00 00 00    	ja     5ef <m11_validate_load_segment+0x11f>
+ 538:	48 39 ca             	cmp    %rcx,%rdx
+ 53b:	0f 93 c0             	setae  %al
+ 53e:	4d 85 d2             	test   %r10,%r10
+ 541:	40 0f 94 c6          	sete   %sil
+ 545:	40 08 c6             	or     %al,%sil
+ 548:	b8 f2 ff ff ff       	mov    $0xfffffff2,%eax
+ 54d:	0f 85 9c 00 00 00    	jne    5ef <m11_validate_load_segment+0x11f>
+ 553:	48 8b 77 10          	mov    0x10(%rdi),%rsi
+ 557:	49 01 f2             	add    %rsi,%r10
+ 55a:	40 0f 92 c7          	setb   %dil
+ 55e:	48 39 d6             	cmp    %rdx,%rsi
+ 561:	0f 92 c2             	setb   %dl
+ 564:	40 08 fa             	or     %dil,%dl
+ 567:	0f 85 82 00 00 00    	jne    5ef <m11_validate_load_segment+0x11f>
+ 56d:	31 c0                	xor    %eax,%eax
+ 56f:	49 39 f2             	cmp    %rsi,%r10
+ 572:	ba f2 ff ff ff       	mov    $0xfffffff2,%edx
+ 577:	0f 46 c2             	cmovbe %edx,%eax
+ 57a:	49 39 ca             	cmp    %rcx,%r10
+ 57d:	0f 47 c2             	cmova  %edx,%eax
+ 580:	eb 6d                	jmp    5ef <m11_validate_load_segment+0x11f>
+ 582:	4d 8d 46 ff          	lea    -0x1(%r14),%r8
+ 586:	b8 f4 ff ff ff       	mov    $0xfffffff4,%eax
+ 58b:	4d 85 c6             	test   %r8,%r14
+ 58e:	75 5f                	jne    5ef <m11_validate_load_segment+0x11f>
+ 590:	48 89 d3             	mov    %rdx,%rbx
+ 593:	48 8b 47 10          	mov    0x10(%rdi),%rax
+ 597:	48 89 c2             	mov    %rax,%rdx
+ 59a:	4c 09 f2             	or     %r14,%rdx
+ 59d:	48 c1 ea 20          	shr    $0x20,%rdx
+ 5a1:	74 11                	je     5b4 <m11_validate_load_segment+0xe4>
+ 5a3:	31 d2                	xor    %edx,%edx
+ 5a5:	49 f7 f6             	div    %r14
+ 5a8:	49 89 d1             	mov    %rdx,%r9
+ 5ab:	eb 0f                	jmp    5bc <m11_validate_load_segment+0xec>
+ 5ad:	b8 f3 ff ff ff       	mov    $0xfffffff3,%eax
+ 5b2:	eb 3b                	jmp    5ef <m11_validate_load_segment+0x11f>
+ 5b4:	31 d2                	xor    %edx,%edx
+ 5b6:	41 f7 f6             	div    %r14d
+ 5b9:	41 89 d1             	mov    %edx,%r9d
+ 5bc:	4c 8b 47 08          	mov    0x8(%rdi),%r8
+ 5c0:	4c 89 c0             	mov    %r8,%rax
+ 5c3:	4c 09 f0             	or     %r14,%rax
+ 5c6:	48 c1 e8 20          	shr    $0x20,%rax
+ 5ca:	74 0a                	je     5d6 <m11_validate_load_segment+0x106>
+ 5cc:	4c 89 c0             	mov    %r8,%rax
+ 5cf:	31 d2                	xor    %edx,%edx
+ 5d1:	49 f7 f6             	div    %r14
+ 5d4:	eb 08                	jmp    5de <m11_validate_load_segment+0x10e>
+ 5d6:	44 89 c0             	mov    %r8d,%eax
+ 5d9:	31 d2                	xor    %edx,%edx
+ 5db:	41 f7 f6             	div    %r14d
+ 5de:	49 39 d1             	cmp    %rdx,%r9
+ 5e1:	48 89 da             	mov    %rbx,%rdx
+ 5e4:	b8 f4 ff ff ff       	mov    $0xfffffff4,%eax
+ 5e9:	0f 84 24 ff ff ff    	je     513 <m11_validate_load_segment+0x43>
+ 5ef:	5b                   	pop    %rbx
+ 5f0:	41 5e                	pop    %r14
+ 5f2:	5d                   	pop    %rbp
+ 5f3:	c3                   	ret
+ 5f4:	66 66 66 2e 0f 1f 84 	data16 data16 cs nopw 0x0(%rax,%rax,1)
+ 5fb:	00 00 00 00 00 
+
+0000000000000600 <m11_error_name>:
+ 600:	55                   	push   %rbp
+ 601:	48 89 e5             	mov    %rsp,%rbp
+ 604:	83 c7 11             	add    $0x11,%edi
+ 607:	b8 00 00 00 00       	mov    $0x0,%eax
+			608: R_X86_64_32	.rodata.str1.1+0x109
+ 60c:	83 ff 11             	cmp    $0x11,%edi
+ 60f:	77 0a                	ja     61b <m11_error_name+0x1b>
+ 611:	89 f8                	mov    %edi,%eax
+ 613:	48 8b 04 c5 00 00 00 	mov    0x0(,%rax,8),%rax
+ 61a:	00 
+			617: R_X86_64_32S	.rodata
+ 61b:	5d                   	pop    %rbp
+ 61c:	c3                   	ret
